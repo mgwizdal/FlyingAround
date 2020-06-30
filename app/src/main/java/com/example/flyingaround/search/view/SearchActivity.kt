@@ -1,6 +1,9 @@
 package com.example.flyingaround.search.view
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import com.example.flyingaround.R
 import com.example.flyingaround.search.viewmodel.SearchActivityViewModel
@@ -11,6 +14,7 @@ import com.google.android.material.snackbar.Snackbar
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.activity_search.*
 import org.koin.android.viewmodel.ext.android.viewModel
+import java.time.LocalDateTime
 
 class SearchActivity : AppCompatActivity() {
     private val destroyDisposables = CompositeDisposable()
@@ -26,7 +30,7 @@ class SearchActivity : AppCompatActivity() {
             .subscribe { state ->
                 when (state) {
                     SearchActivityViewModel.InitializationUiState.Loading -> showLoading()
-                    SearchActivityViewModel.InitializationUiState.Success -> showContent()
+                    is SearchActivityViewModel.InitializationUiState.Success -> handleSuccess(state.list)
                     is SearchActivityViewModel.InitializationUiState.Error -> handleError()
                 }
             }
@@ -40,10 +44,30 @@ class SearchActivity : AppCompatActivity() {
         searchButton.hide()
     }
 
+    private fun handleSuccess(list: List<StationAutoComplete>) {
+        setupView(list)
+        showContent()
+    }
+
     private fun showContent() {
         progressBar.hide()
         formContainer.show()
         searchButton.show()
+    }
+
+    private fun setupView(list: List<StationAutoComplete>) {
+        val adapter = ArrayAdapter<String>(
+            this,
+            android.R.layout.simple_dropdown_item_1line,
+            list.map { it.toString() })
+        originAutoCompleteTextView.setAdapter(adapter)
+        destinationAutoCompleteTextView.setAdapter(adapter)
+        departureEditText.setOnClickListener {
+            val now = LocalDateTime.now()
+            DatePickerDialog(this, { a, year, month, day ->
+                departureEditText.setText("$day/$month/$year")
+            }, now.year, now.monthValue, now.dayOfMonth).show()
+        }
     }
 
     private fun handleError() {

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.example.flyingaround.search.model.usecase.GetAirportsAction
 import com.example.flyingaround.search.model.usecase.GetAirportsResult
 import com.example.flyingaround.search.model.usecase.GetAirportsUseCase
+import com.example.flyingaround.search.view.StationAutoComplete
 import com.example.flyingaround.utils.include
 import example.mobile.engie.com.capfiszki.utils.RxSchedulers
 import io.reactivex.Observable
@@ -19,14 +20,14 @@ class SearchActivityViewModel(
     val initializationObservable: Observable<InitializationUiState> = initializationSubject
         .startWith(InitializationUiState.Loading)
         .observeOn(rxSchedulers.ui)
-
+    
     fun initialize() {
         clearDisposables include Observable.just(GetAirportsAction)
             .compose(getAirportsUseCase)
             .subscribeOn(rxSchedulers.io)
             .subscribe { result ->
                 when (result) {
-                    GetAirportsResult.Success -> initializationSubject.onNext(InitializationUiState.Success)
+                    is GetAirportsResult.Success -> initializationSubject.onNext(InitializationUiState.Success(result.list))
                     is GetAirportsResult.Error -> initializationSubject.onNext(
                         InitializationUiState.Error(
                             result.throwable
@@ -43,7 +44,7 @@ class SearchActivityViewModel(
 
     sealed class InitializationUiState {
         object Loading : InitializationUiState()
-        object Success : InitializationUiState()
+        data class Success(val list: List<StationAutoComplete>) : InitializationUiState()
         data class Error(val throwable: Throwable) : InitializationUiState()
     }
 }

@@ -10,5 +10,4 @@ interface StationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertStations(vararg stationEntities: StationEntity): Array<Long>
 
-
 }
