@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="gone" />
 
-    <TextView
+    <Button
         android:id="@+id/searchButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -29,6 +29,7 @@
         android:textAllCaps="true"
         android:textColor="@color/colorAccent"
         android:textStyle="bold"
+        android:focusable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

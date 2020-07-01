@@ -1,9 +1,9 @@
 package com.example.flyingaround.search.view
 
 import android.app.DatePickerDialog
-import android.app.TimePickerDialog
 import android.os.Bundle
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.flyingaround.R
 import com.example.flyingaround.search.viewmodel.SearchActivityViewModel
@@ -35,6 +35,9 @@ class SearchActivity : AppCompatActivity() {
                 }
             }
 
+        destroyDisposables include viewModel.validationObservable
+            .subscribe(::handleValidationResult)
+
         viewModel.initialize()
     }
 
@@ -65,8 +68,20 @@ class SearchActivity : AppCompatActivity() {
         departureEditText.setOnClickListener {
             val now = LocalDateTime.now()
             DatePickerDialog(this, { a, year, month, day ->
-                departureEditText.setText("$day/$month/$year")
+                departureEditText.setText(getString(R.string.date_format, year, month, day))
             }, now.year, now.monthValue, now.dayOfMonth).show()
+        }
+        searchButton.setOnClickListener {
+            departureEditText.error = null
+            destinationAutoCompleteTextView.error = null
+            originAutoCompleteTextView.error = null
+            adultsEditText.error = null
+            viewModel.search(
+                originAutoCompleteTextView.text.toString(),
+                destinationAutoCompleteTextView.text.toString(),
+                departureEditText.text.toString(),
+                adultsEditText.text.toString()
+            )
         }
     }
 
@@ -89,5 +104,31 @@ class SearchActivity : AppCompatActivity() {
         progressBar.hide()
         formContainer.hide()
         searchButton.hide()
+    }
+
+    private fun handleValidationResult(result: SearchActivityViewModel.Validation) {
+        when (result) {
+            SearchActivityViewModel.Validation.Success -> handleValidationSuccess()
+            is SearchActivityViewModel.Validation.Error -> handleValidationError(result)
+        }
+    }
+
+    private fun handleValidationSuccess() {
+        Toast.makeText(
+            this,
+            "Validation correct",
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
+    private fun handleValidationError(result: SearchActivityViewModel.Validation.Error) {
+        if (result.errorTypeList.contains(SearchActivityViewModel.Validation.ErrorType.ORIGIN_STATION)) originAutoCompleteTextView.error =
+            getString(R.string.incorrect_origin_station)
+        if (result.errorTypeList.contains(SearchActivityViewModel.Validation.ErrorType.DESTINATION_STATION)) destinationAutoCompleteTextView.error =
+            getString(R.string.incorrect_destination)
+        if (result.errorTypeList.contains(SearchActivityViewModel.Validation.ErrorType.DEPARTURE)) departureEditText.error =
+            getString(R.string.incorrect_departure_time)
+        if (result.errorTypeList.contains(SearchActivityViewModel.Validation.ErrorType.ADULTS)) adultsEditText.error =
+            getString(R.string.incorrect_adults_number)
     }
 }

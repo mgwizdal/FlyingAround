@@ -4,4 +4,9 @@
     <string name="signature">by Maks Gwizdala</string>
     <string name="init_failed">Initialization failed</string>
     <string name="retry">Retry</string>
+    <string name="incorrect_departure_time">Incorrect departure time!</string>
+    <string name="incorrect_destination">Incorrect destination!</string>
+    <string name="incorrect_origin_station">Incorrect origin station!</string>
+    <string name="incorrect_adults_number">Incorrect number of adults!</string>
+    <string name="date_format">%d-%d-%d</string>
 </resources>

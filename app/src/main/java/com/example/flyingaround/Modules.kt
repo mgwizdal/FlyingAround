@@ -1,6 +1,7 @@
 package com.example.flyingaround
 
 import com.example.flyingaround.db.FlyingAroundDatabase
+import com.example.flyingaround.search.model.db.StationRepository
 import com.example.flyingaround.search.model.usecase.GetAirportsUseCase
 import com.example.flyingaround.search.network.SearchService
 import com.example.flyingaround.search.viewmodel.SearchActivityViewModel
@@ -17,7 +18,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 val appModule = module {
     single { GetAirportsUseCase(get(), get()) }
-    viewModel { SearchActivityViewModel(get(), get()) }
+    single { StationRepository(get()) }
+    viewModel { SearchActivityViewModel(get(), get(), get()) }
     single { RxSchedulers() }
 }
 
