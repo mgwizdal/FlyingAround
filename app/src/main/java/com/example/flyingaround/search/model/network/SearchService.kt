@@ -1,4 +1,4 @@
-package com.example.flyingaround.search.network
+package com.example.flyingaround.search.model.network
 
 import io.reactivex.Single
 import retrofit2.Response

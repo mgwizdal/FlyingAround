@@ -1,7 +1,7 @@
 package com.example.flyingaround.search.model.usecase
 
 import com.example.flyingaround.search.model.db.StationDao
-import com.example.flyingaround.search.network.SearchService
+import com.example.flyingaround.search.model.network.SearchService
 import com.example.flyingaround.search.view.StationAutoComplete
 import com.example.flyingaround.utils.toBodyOrError
 import io.reactivex.Observable

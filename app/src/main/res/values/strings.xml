@@ -9,4 +9,10 @@
     <string name="incorrect_origin_station">Incorrect origin station!</string>
     <string name="incorrect_adults_number">Incorrect number of adults!</string>
     <string name="date_format">%d-%d-%d</string>
+    <string name="discount">Discount:</string>
+    <string name="fare_class">Fare Class:</string>
+    <string name="infants_left">Infants Left:</string>
+    <string name="destination">Destination:</string>
+    <string name="origin">Origin:</string>
+    <string name="flight_details">Flight details</string>
 </resources>

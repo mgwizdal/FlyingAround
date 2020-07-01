@@ -1,9 +1,14 @@
 package com.example.flyingaround
 
 import com.example.flyingaround.db.FlyingAroundDatabase
+import com.example.flyingaround.details.viewmodel.DetailsDialogFragmentViewModel
+import com.example.flyingaround.resultlist.model.db.FlightsRepository
+import com.example.flyingaround.resultlist.model.network.GetFlightsService
+import com.example.flyingaround.resultlist.model.usecase.GetFlightsUseCase
+import com.example.flyingaround.resultlist.viewmodel.ResultListActivityViewModel
 import com.example.flyingaround.search.model.db.StationRepository
+import com.example.flyingaround.search.model.network.SearchService
 import com.example.flyingaround.search.model.usecase.GetAirportsUseCase
-import com.example.flyingaround.search.network.SearchService
 import com.example.flyingaround.search.viewmodel.SearchActivityViewModel
 import com.facebook.stetho.okhttp3.StethoInterceptor
 import example.mobile.engie.com.capfiszki.utils.RxSchedulers
@@ -18,8 +23,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 val appModule = module {
     single { GetAirportsUseCase(get(), get()) }
+    single { GetFlightsUseCase(get(), get()) }
     single { StationRepository(get()) }
+    single { FlightsRepository(get()) }
     viewModel { SearchActivityViewModel(get(), get(), get()) }
+    viewModel { ResultListActivityViewModel(get(), get(), get()) }
+    viewModel { DetailsDialogFragmentViewModel(get(), get()) }
     single { RxSchedulers() }
 }
 
@@ -31,17 +40,25 @@ val dbModule = module {
     single {
         get<FlyingAroundDatabase>().stationDao()
     }
+
+    single {
+        get<FlyingAroundDatabase>().flightsDao()
+    }
 }
 
 val networkModule = module {
     single { provideRetrofit(get()) }
     single { provideSearchService(get()) }
+    single { provideGetFlightsService(get()) }
     single { provideOkHttpClient(get()) }
     single { provideStethoInterceptor() }
 }
 
 fun provideSearchService(retrofit: Retrofit): SearchService {
     return retrofit.create(SearchService::class.java)
+}
+fun provideGetFlightsService(retrofit: Retrofit): GetFlightsService {
+    return retrofit.create(GetFlightsService::class.java)
 }
 
 fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {

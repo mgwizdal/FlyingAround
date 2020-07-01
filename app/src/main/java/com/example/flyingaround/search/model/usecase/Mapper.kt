@@ -1,7 +1,7 @@
 package com.example.flyingaround.search.model.usecase
 
 import com.example.flyingaround.search.model.db.StationEntity
-import com.example.flyingaround.search.network.StationDto
+import com.example.flyingaround.search.model.network.StationDto
 import com.example.flyingaround.search.view.StationAutoComplete
 
 fun StationDto.mapToEntity(): StationEntity {

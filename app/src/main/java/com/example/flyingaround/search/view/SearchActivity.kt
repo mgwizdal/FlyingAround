@@ -3,9 +3,9 @@ package com.example.flyingaround.search.view
 import android.app.DatePickerDialog
 import android.os.Bundle
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.flyingaround.R
+import com.example.flyingaround.resultlist.view.ResultListActivity
 import com.example.flyingaround.search.viewmodel.SearchActivityViewModel
 import com.example.flyingaround.utils.hide
 import com.example.flyingaround.utils.include
@@ -80,13 +80,15 @@ class SearchActivity : AppCompatActivity() {
                 originAutoCompleteTextView.text.toString(),
                 destinationAutoCompleteTextView.text.toString(),
                 departureEditText.text.toString(),
-                adultsEditText.text.toString()
+                adultsEditText.text.toString(),
+                teensEditText.text.toString(),
+                childrenEditText.text.toString()
             )
         }
     }
 
     private fun handleError() {
-        showError()
+        hideAll()
         val snackbar = Snackbar.make(
             rootView,
             getString(R.string.init_failed),
@@ -100,7 +102,7 @@ class SearchActivity : AppCompatActivity() {
         snackbar.show()
     }
 
-    private fun showError() {
+    private fun hideAll() {
         progressBar.hide()
         formContainer.hide()
         searchButton.hide()
@@ -108,17 +110,22 @@ class SearchActivity : AppCompatActivity() {
 
     private fun handleValidationResult(result: SearchActivityViewModel.Validation) {
         when (result) {
-            SearchActivityViewModel.Validation.Success -> handleValidationSuccess()
+            is SearchActivityViewModel.Validation.Success -> handleValidationSuccess(result)
             is SearchActivityViewModel.Validation.Error -> handleValidationError(result)
         }
     }
 
-    private fun handleValidationSuccess() {
-        Toast.makeText(
+    private fun handleValidationSuccess(result: SearchActivityViewModel.Validation.Success) {
+
+        ResultListActivity.start(
             this,
-            "Validation correct",
-            Toast.LENGTH_LONG
-        ).show()
+            result.originStation,
+            result.destinationStation,
+            result.departureTime,
+            result.adults,
+            result.teens,
+            result.children
+        )
     }
 
     private fun handleValidationError(result: SearchActivityViewModel.Validation.Error) {
@@ -130,5 +137,10 @@ class SearchActivity : AppCompatActivity() {
             getString(R.string.incorrect_departure_time)
         if (result.errorTypeList.contains(SearchActivityViewModel.Validation.ErrorType.ADULTS)) adultsEditText.error =
             getString(R.string.incorrect_adults_number)
+    }
+
+    override fun onDestroy() {
+        destroyDisposables.dispose()
+        super.onDestroy()
     }
 }

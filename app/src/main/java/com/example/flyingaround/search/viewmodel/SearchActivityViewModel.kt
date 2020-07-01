@@ -1,5 +1,6 @@
 package com.example.flyingaround.search.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.flyingaround.search.model.db.StationRepository
 import com.example.flyingaround.search.model.usecase.GetAirportsAction
@@ -23,21 +24,29 @@ class SearchActivityViewModel(
         .startWith(InitializationUiState.Loading)
         .observeOn(rxSchedulers.ui)
 
-    val validationSubject = PublishSubject.create<ValidationContent>()
+    private val validationSubject = PublishSubject.create<ValidationContent>()
     val validationObservable: Observable<Validation> = validationSubject
         .subscribeOn(rxSchedulers.disk)
         .observeOn(rxSchedulers.disk)
         .map(::validateForm)
-        .map(::mapToResult)
         .observeOn(rxSchedulers.ui)
 
-    fun search(originStation: String, destination: String, departureTime: String, adults: String) {
+    fun search(
+        originStation: String,
+        destination: String,
+        departureTime: String,
+        adults: String,
+        teens: String?,
+        children: String?
+    ) {
         validationSubject.onNext(
             ValidationContent(
                 originStation,
                 destination,
                 departureTime,
-                adults
+                adults,
+                teens,
+                children
             )
         )
     }
@@ -51,19 +60,21 @@ class SearchActivityViewModel(
                     is GetAirportsResult.Success -> initializationSubject.onNext(
                         InitializationUiState.Success(result.list)
                     )
-                    is GetAirportsResult.Error -> initializationSubject.onNext(
-                        InitializationUiState.Error(
-                            result.throwable
+                    is GetAirportsResult.Error -> {
+                        Log.e("${this@SearchActivityViewModel.javaClass}", result.throwable.localizedMessage ?: "GetAirportsResultError")
+                        initializationSubject.onNext(
+                            InitializationUiState.Error(
+                                result.throwable
+                            )
                         )
-                    )
+                    }
                 }
             }
     }
 
-    private fun validateForm(validationContent: ValidationContent): List<Validation.ErrorType> {
+    private fun validateForm(validationContent: ValidationContent): Validation {
         val mutableErrorList = mutableListOf<Validation.ErrorType>()
-        if (validationContent.adults.toIntOrNull()?.let { number -> number < 0 } ?: true) mutableErrorList.add(Validation.ErrorType.ADULTS)
-        if (validationContent.departureTime.isEmpty()) mutableErrorList.add(Validation.ErrorType.DEPARTURE)
+
         val originExpectedCode = getCode(validationContent.originStation)
         val destinationExpectedCode = getCode(validationContent.destinationStation)
         if (originExpectedCode == null || !stationRepository.isStationCodeCorrect(originExpectedCode)) mutableErrorList.add(
@@ -73,11 +84,24 @@ class SearchActivityViewModel(
                 destinationExpectedCode
             )
         ) mutableErrorList.add(Validation.ErrorType.DESTINATION_STATION)
-        return mutableErrorList.toList()
-    }
 
-    private fun mapToResult(errorList: List<Validation.ErrorType>): Validation {
-        return if (errorList.isEmpty()) Validation.Success else Validation.Error(errorList)
+        if (validationContent.adults.toIntOrNull()
+                ?.let { number -> number < 0 } != false
+        ) mutableErrorList.add(Validation.ErrorType.ADULTS)
+        if (validationContent.departureTime.isEmpty()) mutableErrorList.add(Validation.ErrorType.DEPARTURE)
+
+        return if (mutableErrorList.isEmpty()) {
+            Validation.Success(
+                requireNotNull(originExpectedCode),
+                requireNotNull(destinationExpectedCode),
+                validationContent.departureTime,
+                requireNotNull(validationContent.adults.toIntOrNull()),
+                validationContent.teens?.toIntOrNull() ?: 0,
+                validationContent.children?.toIntOrNull() ?: 0
+            )
+        } else {
+            Validation.Error(mutableErrorList.toList())
+        }
     }
 
     private fun getCode(station: String): String? {
@@ -104,11 +128,21 @@ class SearchActivityViewModel(
         val originStation: String,
         val destinationStation: String,
         val departureTime: String,
-        val adults: String
+        val adults: String,
+        val teens: String? = null,
+        val children: String? = null
     )
 
     sealed class Validation {
-        object Success : Validation()
+        data class Success(
+            val originStation: String,
+            val destinationStation: String,
+            val departureTime: String,
+            val adults: Int,
+            val teens: Int = 0,
+            val children: Int = 0
+        ) : Validation()
+
         data class Error(val errorTypeList: List<ErrorType>) : Validation()
 
         enum class ErrorType {
