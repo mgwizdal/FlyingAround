@@ -10,11 +10,12 @@ import com.example.flyingaround.search.view.StationAutoComplete
 import com.example.flyingaround.utils.include
 import example.mobile.engie.com.capfiszki.utils.RxSchedulers
 import io.reactivex.Observable
+import io.reactivex.ObservableTransformer
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 
 class SearchActivityViewModel(
-    private val getAirportsUseCase: GetAirportsUseCase,
+    private val getAirportsUseCase: ObservableTransformer<GetAirportsAction, GetAirportsResult>,
     private val stationRepository: StationRepository,
     private val rxSchedulers: RxSchedulers
 ) : ViewModel() {

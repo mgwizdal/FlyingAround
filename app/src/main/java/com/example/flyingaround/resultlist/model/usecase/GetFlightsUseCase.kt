@@ -21,55 +21,24 @@ class GetFlightsUseCase(
                 it
             }
             .flatMap { action ->
-//                getFlightsService.getFlights(
-//                    origin = action.origin,
-//                    destination = action.destination,
-//                    dateOut = action.departureDate,
-//                    flexDaysOut = FLEX_DAYS_OUT,
-//                    adults = action.adults.toString(),
-//                    teens = action.teens.toString(),
-//                    chd = action.children.toString(),
-//                    roundTrip = false,
-//                    toUs = TO_US
-//                )
-                Single.just(
-                    Response.success(SearchResultDto(
-                    "PLN",
-                    listOf(TripsDto(
-                        "wro",
-                        "wroclaw",
-                        "war",
-                        "warszawa",
-                        listOf(TripDatesDto(
-                            "jakas data",
-                                listOf(
-                                    FlightDto(
-                                        "flightNumber",
-                                    listOf("String one", "date two"),
-                                    "1:21",
-                                    12,
-                                    RegularFareDto(
-                                        "fareKey",
-                                        "S",
-                                        listOf(
-                                            FareDto(
-                                                129.99f,
-                                                10
-                                            )
-                                        )
-                                    )
-                                    )
-                                )
-                            ))
-
-                    ))
-                ))).toObservable()
+                getFlightsService.getFlights(
+                    origin = action.origin,
+                    destination = action.destination,
+                    dateOut = action.departureDate,
+                    flexDaysOut = FLEX_DAYS_OUT,
+                    adults = action.adults.toString(),
+                    teens = action.teens.toString(),
+                    chd = action.children.toString(),
+                    roundTrip = false,
+                    toUs = TO_US
+                ).toObservable()
                     .map { it.toBodyOrError() }
                     .map {
-                        flightsRepository.insertFlightInfoItems(it.getFlyingItemEntities())
-                        Log.i("!@#", "${it.getFlyingItemEntities()}")
+                        val flightInfoItemEntities = it.getFlyingItemEntities()
+                        flightsRepository.insertFlightInfoItems(flightInfoItemEntities)
+                        flightInfoItemEntities.isEmpty()
                     }
-                    .map { GetFlightsResult.Success as GetFlightsResult }
+                    .map { GetFlightsResult.Success(it) as GetFlightsResult }
                     .onErrorReturn { GetFlightsResult.Error(it) }
             }
     }
@@ -90,7 +59,7 @@ data class GetFlightsAction(
 )
 
 sealed class GetFlightsResult {
-    object Success : GetFlightsResult()
+    data class Success(val isEmptyList: Boolean) : GetFlightsResult()
     data class Error(val throwable: Throwable) : GetFlightsResult()
 }
 

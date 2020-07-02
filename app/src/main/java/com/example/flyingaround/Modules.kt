@@ -8,10 +8,13 @@ import com.example.flyingaround.resultlist.model.usecase.GetFlightsUseCase
 import com.example.flyingaround.resultlist.viewmodel.ResultListActivityViewModel
 import com.example.flyingaround.search.model.db.StationRepository
 import com.example.flyingaround.search.model.network.SearchService
+import com.example.flyingaround.search.model.usecase.GetAirportsAction
+import com.example.flyingaround.search.model.usecase.GetAirportsResult
 import com.example.flyingaround.search.model.usecase.GetAirportsUseCase
 import com.example.flyingaround.search.viewmodel.SearchActivityViewModel
 import com.facebook.stetho.okhttp3.StethoInterceptor
 import example.mobile.engie.com.capfiszki.utils.RxSchedulers
+import io.reactivex.ObservableTransformer
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import org.koin.android.ext.koin.androidApplication
@@ -22,7 +25,7 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 
 val appModule = module {
-    single { GetAirportsUseCase(get(), get()) }
+    single { GetAirportsUseCase(get(), get()) as ObservableTransformer<GetAirportsAction, GetAirportsResult> }
     single { GetFlightsUseCase(get(), get()) }
     single { StationRepository(get()) }
     single { FlightsRepository(get()) }

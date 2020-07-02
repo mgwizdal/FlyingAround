@@ -37,10 +37,12 @@ class ResultListActivity : AppCompatActivity() {
         setContentView(R.layout.activity_result_list)
 
         adapter = ResultListAdapter(emptyList())
-        resultListRecyclerView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
+        resultListRecyclerView.layoutManager =
+            LinearLayoutManager(this, RecyclerView.VERTICAL, false)
         resultListRecyclerView.adapter = adapter
         adapter.onClickListener = {
-            DetailsDialogFragment.create(it).showNow(supportFragmentManager, DetailsDialogFragment.TAG)
+            DetailsDialogFragment.create(it)
+                .showNow(supportFragmentManager, DetailsDialogFragment.TAG)
         }
 
         originStation = intent.getStringExtra(KEY_ORIGIN_STATION)
@@ -50,26 +52,39 @@ class ResultListActivity : AppCompatActivity() {
         teens = intent.getIntExtra(KEY_TEENS, 0)
         children = intent.getIntExtra(KEY_CHILDREN, 0)
 
-        if(originStation != null || destinationStation != null) {
+        if (originStation != null || destinationStation != null) {
             toolbarResult.title = "$originStation -> $destinationStation"
             setSupportActionBar(toolbarResult)
         }
 
-        destroyDisposables include viewModel.downloadFlights(requireNotNull(originStation), requireNotNull(destinationStation), requireNotNull(departureTime), adults, teens, children)
-            .subscribe (::handleDownloadSuccess, ::handleError)
+        destroyDisposables include viewModel.downloadFlights(
+            requireNotNull(originStation),
+            requireNotNull(destinationStation),
+            requireNotNull(departureTime),
+            adults,
+            teens,
+            children
+        )
+            .subscribe(::handleDownloadSuccess, ::handleError)
 
         destroyDisposables include viewModel.listOfFlightItems
-            .subscribe {
-                (resultListRecyclerView.adapter as? ResultListAdapter)?.flightInfoItemList = it
+            .subscribe { list ->
+                (resultListRecyclerView.adapter as? ResultListAdapter)?.flightInfoItemList =
+                    list
                 (resultListRecyclerView.adapter as? ResultListAdapter)?.notifyDataSetChanged()
             }
     }
 
-    private fun handleDownloadSuccess(result: GetFlightsResult?) {
+    private fun handleDownloadSuccess(result: GetFlightsResult) {
         progressBar.hide()
         when (result) {
-            GetFlightsResult.Success -> {
-                resultListRecyclerView.show()
+            is GetFlightsResult.Success -> {
+                if (result.isEmptyList) {
+                    resultListRecyclerView.hide()
+                    emptyResultTextView.show()
+                } else {
+                    resultListRecyclerView.show()
+                }
             }
             is GetFlightsResult.Error ->
                 handleError(result.throwable)

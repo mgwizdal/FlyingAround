@@ -72,10 +72,7 @@ class SearchActivity : AppCompatActivity() {
             }, now.year, now.monthValue, now.dayOfMonth).show()
         }
         searchButton.setOnClickListener {
-            departureEditText.error = null
-            destinationAutoCompleteTextView.error = null
-            originAutoCompleteTextView.error = null
-            adultsEditText.error = null
+            clearErrors()
             viewModel.search(
                 originAutoCompleteTextView.text.toString(),
                 destinationAutoCompleteTextView.text.toString(),
@@ -85,6 +82,13 @@ class SearchActivity : AppCompatActivity() {
                 childrenEditText.text.toString()
             )
         }
+    }
+
+    private fun clearErrors() {
+        departureEditText.error = null
+        destinationAutoCompleteTextView.error = null
+        originAutoCompleteTextView.error = null
+        adultsEditText.error = null
     }
 
     private fun handleError() {
